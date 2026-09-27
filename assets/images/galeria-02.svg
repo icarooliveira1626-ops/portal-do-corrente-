@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" role="img" aria-label="Foto 2">
+  <rect width="900" height="600" fill="#F7F3EC"/>
+  <path d="M-40,40 Q120,26 280,40 Q440,54 600,40" fill="none" stroke="#EFE7D8" stroke-width="1.4" opacity="0.55"/>
+<path d="M-40,90 Q120,75 280,90 Q440,105 600,90" fill="none" stroke="#EFE7D8" stroke-width="1.4" opacity="0.55"/>
+<path d="M-40,140 Q120,130 280,140 Q440,150 600,140" fill="none" stroke="#EFE7D8" stroke-width="1.4" opacity="0.55"/>
+  <rect x="0.5" y="0.5" width="899" height="599" fill="none" stroke="#23281F" stroke-opacity="0.08" stroke-width="1"/>
+  <g transform="translate(450.0,270.0)" opacity="0.9">
+    <path d="M-40,-28 L40,-28 L40,28 L-40,28 Z M-40,14 L-16,-6 L2,10 L16,-2 L40,20 M-22,-16 A6,6 0 1 1 -22,-16.1" fill="none" stroke="#B08A4E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="450.0" y="554" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="20" letter-spacing="0.3" fill="#23281F" fill-opacity="0.82">Foto 2</text>
+  <text x="450.0" y="578" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" letter-spacing="1.5" fill="#23281F" fill-opacity="0.45">IMAGEM TEMPORARIA DE DEMONSTRACAO</text>
+</svg>

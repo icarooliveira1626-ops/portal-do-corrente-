@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-label="Fachada do hotel">
+  <rect width="1600" height="1000" fill="#F7F3EC"/>
+  <path d="M-40,40 Q120,28 280,40 Q440,52 600,40" fill="none" stroke="#EFE7D8" stroke-width="1.4" opacity="0.55"/>
+<path d="M-40,90 Q120,77 280,90 Q440,103 600,90" fill="none" stroke="#EFE7D8" stroke-width="1.4" opacity="0.55"/>
+<path d="M-40,140 Q120,126 280,140 Q440,154 600,140" fill="none" stroke="#EFE7D8" stroke-width="1.4" opacity="0.55"/>
+  <rect x="0.5" y="0.5" width="1599" height="999" fill="none" stroke="#23281F" stroke-opacity="0.08" stroke-width="1"/>
+  <g transform="translate(800.0,470.0)" opacity="0.9">
+    <path d="M0,0 L0,-70 L46,-70 L46,0 M-14,0 L-14,-90 L14,-90 M-14,-90 L-30,-70 M14,-90 L30,-70 M-30,-70 L-30,0 M30,-70 L30,0 M-8,-55 L-8,-45 M8,-55 L8,-45 M-8,-30 L-8,-20 M8,-30 L8,-20" fill="none" stroke="#B08A4E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" transform="translate(0,0)"/>
+  </g>
+  <text x="800.0" y="954" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="20" letter-spacing="0.3" fill="#23281F" fill-opacity="0.82">Fachada do hotel</text>
+  <text x="800.0" y="978" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="12" letter-spacing="1.5" fill="#23281F" fill-opacity="0.45">IMAGEM TEMPORARIA DE DEMONSTRACAO</text>
+</svg>
