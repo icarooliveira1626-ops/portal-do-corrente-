@@ -5,6 +5,9 @@ Este projeto é uma **demonstração comercial**, feita para ser apresentada ao 
 da contratação/publicação oficial. Onde uma informação real não estava confirmada, foi
 usado um placeholder claramente identificado — nada foi inventado.
 
+> **Nota desta revisão:** a seção "Changelog da revisão" no final deste documento lista
+> tudo que mudou na última rodada de ajustes e tudo que ainda depende de informação sua.
+
 ---
 
 ## 1. Estrutura de pastas
@@ -19,20 +22,21 @@ portal-do-corrente/
 ├── css/
 │   └── styles.css            # Todos os estilos (tokens de design, layout, componentes)
 ├── js/
-│   ├── whatsapp.js            # Função reutilizável para montar links do WhatsApp
-│   └── main.js                 # Navbar, scroll reveal, lightbox, validação do formulário
+│   ├── whatsapp.js            # Funções reutilizáveis para montar links e mensagens do WhatsApp
+│   ├── render.js               # Monta os cards de quarto, contato, mapa e links a partir dos arquivos de config
+│   └── main.js                  # Navbar, scroll reveal, validação do formulário
 ├── config/
-│   └── hotel.js                 # ÚNICO arquivo com telefone, WhatsApp, Instagram, endereço
+│   ├── hotel.js                  # ÚNICO arquivo com telefone, WhatsApp, Instagram, endereço
+│   └── rooms.js                   # ÚNICO arquivo com os dados de cada quarto
 └── assets/
     ├── favicon.svg
-    └── images/                    # Imagens — atualmente placeholders SVG de demonstração
+    └── images/                      # Imagens — atualmente placeholders SVG de demonstração
         ├── hero-hotel.svg
         ├── fachada.svg
         ├── quarto-01.svg / 02 / 03
         ├── cafe-da-manha.svg
         ├── area-externa.svg
-        ├── recepcao.svg
-        └── galeria-01.svg … galeria-06.svg
+        └── recepcao.svg
 ```
 
 Não há backend, banco de dados ou build step: é HTML, CSS e JavaScript puro, o que
@@ -69,40 +73,65 @@ npx serve .
 
 ## 4. Como configurar as informações do hotel
 
-Todas as informações editáveis (telefone, WhatsApp, Instagram, endereço, links do
-Google Maps) estão centralizadas em **`config/hotel.js`**. Não há esses dados
-espalhados em outros arquivos.
+Todas as informações de contato (telefone, WhatsApp, Instagram, endereço, links do
+Google Maps) estão centralizadas em **`config/hotel.js`**, e todos os dados dos
+quartos estão em **`config/rooms.js`**. Nenhum desses dados fica espalhado pelo
+HTML — os cards e links são montados automaticamente por `js/render.js`.
 
 ### 4.1 Onde alterar o telefone
-Editar `PHONE_DISPLAY` e `PHONE_E164` em `config/hotel.js`.
+Editar `PHONE_DISPLAY` e `PHONE_E164` em `config/hotel.js`. Enquanto esses campos
+estiverem vazios (`""`), o card de contato mostra "Telefone a confirmar" em vez
+de um número falso.
 
 ### 4.2 Onde alterar o WhatsApp
 Editar `WHATSAPP_NUMBER` em `config/hotel.js` com o número real, apenas dígitos e
-com código do país (ex.: `"5577999999999"`). Depois, mudar `WHATSAPP_CONFIGURED`
-para `true` — **enquanto estiver `false`, o formulário de reserva avisa o visitante
-que o número ainda não foi configurado, em vez de abrir um link inválido.**
+com código do país (ex.: `"5577999999999"`). **Não é preciso mexer em mais nada**:
+assim que um número válido é salvo, o site detecta automaticamente
+(`isWhatsAppConfigured()` em `js/whatsapp.js`) e passa a:
+- habilitar o botão flutuante de WhatsApp;
+- habilitar o botão "Solicitar reserva" de cada quarto (com mensagem já
+  identificando qual quarto foi escolhido, ex.: *"Olá! Gostaria de consultar a
+  disponibilidade do Quarto Casal no Hotel Portal do Corrente."*);
+- habilitar o formulário da seção "Solicitar reserva";
+- preencher o link de WhatsApp no card de Contato e no rodapé.
+
+**Enquanto o número não for preenchido**, nenhum desses botões aponta para um
+número inventado — eles mostram um aviso ("O WhatsApp do hotel ainda não foi
+configurado neste site de demonstração") em vez de abrir um link inválido.
 
 ### 4.3 Onde trocar as fotos
-Substituir os arquivos dentro de `assets/images/` mantendo exatamente os mesmos
-nomes (ex.: substituir `assets/images/quarto-01.svg` por um `quarto-01.jpg` real —
-nesse caso, também atualizar a extensão referenciada em `index.html`, já que os
-placeholders atuais são `.svg` e fotos reais normalmente serão `.jpg/.webp`).
-Os nomes de arquivo foram escolhidos para deixar essa substituição óbvia:
-`hero-hotel`, `fachada`, `quarto-01/02/03`, `cafe-da-manha`, `area-externa`,
-`recepcao`, `galeria-01` a `galeria-06`.
+Substituir os arquivos dentro de `assets/images/` e apontar para o novo arquivo em
+`config/rooms.js` (campo `image` de cada quarto) ou em `index.html` (seção "O Hotel",
+que usa `assets/images/fachada.svg`). Pode usar os nomes sugeridos no pedido original
+(`fachada.jpg`, `quarto-casal.jpg`, `quarto-familia.jpg`, `banheiro.jpg`,
+`area-externa.jpg`) ou manter os atuais — o importante é que o caminho em
+`config/rooms.js`/`index.html` aponte para o arquivo certo.
+**Enquanto a imagem referenciada for um `.svg` destes placeholders, o card mostra
+sozinho a etiqueta "Imagem de demonstração"; ao trocar por uma foto real
+(`.jpg`/`.webp`), a etiqueta some automaticamente** — não precisa editar nada além
+do caminho da imagem.
 
 ### 4.4 Onde alterar os quartos
-As seções de cada quarto estão em `index.html`, dentro de `<section id="acomodacoes">`.
-Cada quarto é um bloco `<article class="room">` independente — copie, cole e edite
-para adicionar mais tipos de quarto, ou remova os que não existirem.
+Tudo em **`config/rooms.js`**. Cada quarto é um bloco com `name`, `image`,
+`capacity`, `features`, `amenities`, `price` (opcional) e `message` (opcional,
+texto do WhatsApp específico daquele quarto). Para adicionar um quarto, copie um
+bloco e cole no array `ROOMS`; para remover, apague o bloco. Os cards em
+`index.html` são gerados automaticamente a partir dessa lista — **não é
+necessário editar o HTML**. Campos deixados como `null` ou `[]` aparecem no
+card como "a confirmar", nunca como um dado inventado.
 
 ### 4.5 Onde alterar informações do hotel (texto institucional)
 O texto da seção "O Hotel" está em `index.html`, dentro de `<section id="o-hotel">`.
 Está marcado como demonstração e deve ser revisado com a administração do hotel.
 
 ### 4.6 Onde alterar o endereço e o mapa
-Editar `ADDRESS_*`, `GOOGLE_MAPS_URL` e `GOOGLE_MAPS_EMBED_URL` em `config/hotel.js`,
-e o bloco `<address>` + `src` do `<iframe>` em `index.html` (seção "Localização").
+Editar `ADDRESS_*`, `GOOGLE_MAPS_URL` e `GOOGLE_MAPS_EMBED_URL` em `config/hotel.js`
+(o `<iframe>` do mapa e o botão "Como chegar" em `index.html` são preenchidos
+automaticamente a partir dessas variáveis).
+
+### 4.7 Onde alterar horário de atendimento
+Editar `CHECKIN_TIME`, `CHECKOUT_TIME` e `RECEPTION_HOURS` em `config/hotel.js`.
+Enquanto estiverem como `null`, o card de Contato mostra "Horários a confirmar".
 
 ## 5. Como fazer deploy na Vercel
 
@@ -119,13 +148,19 @@ e o bloco `<address>` + `src` do `<iframe>` em `index.html` (seção "Localizaç
 ## 6. O que funciona atualmente
 
 - Layout completo, responsivo (320px a telas grandes), com navbar, hero,
-  seção institucional, acomodações, comodidades, galeria com lightbox,
-  formulário de reserva, localização, contato e footer.
+  seção institucional, acomodações, comodidades, formulário de reserva,
+  localização, contato e rodapé.
+- Cards de quarto gerados automaticamente a partir de `config/rooms.js`, prontos
+  para receber fotos e dados reais sem precisar editar HTML.
 - O formulário de reserva valida nome, datas (check-out após check-in, sem
   datas passadas), número de hóspedes e telefone (quando informado), e monta
   uma mensagem para abrir no WhatsApp — **sem armazenar nenhum dado**.
-- Botão flutuante de WhatsApp e botões "Solicitar reserva" nos quartos, que
-  pré-selecionam o tipo de quarto no formulário.
+- Botão flutuante de WhatsApp e botões "Solicitar reserva" de cada quarto, cada
+  um gerando uma mensagem identificando o quarto escolhido.
+- Enquanto o WhatsApp não estiver configurado, todos esses botões mostram um
+  aviso claro em vez de um link quebrado ou inventado.
+- Conteúdo visível mesmo sem JavaScript (o efeito de revelação suave só é
+  ativado depois que o site confirma que o JavaScript carregou).
 - SEO básico (title, description, Open Graph, canonical, robots, sitemap,
   dados estruturados Schema.org do tipo `Hotel` com apenas informações reais).
 - Acessibilidade básica: HTML semântico, navegação por teclado, foco visível,
@@ -135,14 +170,15 @@ e o bloco `<address>` + `src` do `<iframe>` em `index.html` (seção "Localizaç
 
 ## 7. O que depende de informação ou autorização do hotel
 
-Estes pontos estão marcados no próprio site com placeholders (`[CONFIRMAR...]`)
-e **precisam ser preenchidos antes da publicação**:
+Estes pontos estão marcados no próprio site com placeholders ("a confirmar") e
+**precisam ser preenchidos antes da publicação**:
 
 - Número de telefone e WhatsApp oficiais (`config/hotel.js`).
-- Fotos reais da fachada, quartos, café da manhã, área externa, recepção e
-  galeria (atualmente todas são ilustrações de demonstração, geradas
-  internamente — nenhuma foto de terceiros foi utilizada).
-- Nomes, descrições, capacidade e comodidades reais de cada tipo de quarto.
+- Fotos reais dos quartos, fachada, café da manhã, área externa e recepção
+  (atualmente todas são ilustrações de demonstração, geradas internamente —
+  nenhuma foto de terceiros foi utilizada).
+- Nomes, capacidades, características, comodidades e (se o hotel quiser
+  divulgar) preços reais de cada tipo de quarto (`config/rooms.js`).
 - Texto institucional definitivo sobre o hotel (história, proposta, público).
 - Horários de check-in/check-out e de funcionamento da recepção.
 - Autorização para uso de eventuais avaliações reais de hóspedes (a seção
@@ -157,7 +193,8 @@ e **precisam ser preenchidos antes da publicação**:
 - [x] Nenhum backend criado sem necessidade real (o site não processa
       pagamentos nem armazena dados — por isso não existe servidor).
 - [x] Número de WhatsApp centralizado em `config/hotel.js` (não é um segredo,
-      mas fica em um único lugar, fácil de auditar e atualizar).
+      mas fica em um único lugar, fácil de auditar e atualizar) — e nenhum
+      link de WhatsApp é gerado enquanto esse número não for preenchido.
 - [x] Formulário valida entradas no cliente (nome, datas, hóspedes, telefone)
       e não envia dados a nenhum servidor — apenas monta uma mensagem local.
 - [x] Nenhuma reserva é confirmada automaticamente; nenhum pagamento é
@@ -185,15 +222,64 @@ e **precisam ser preenchidos antes da publicação**:
   hóspedes estrangeiros com frequência.
 - Analytics simples e compatível com a LGPD (ex.: uma ferramenta sem cookies
   de rastreamento pessoal), caso o hotel queira métricas de visitas.
-- Formulário de contato adicional (fora do fluxo de reserva), se fizer
-  sentido para o hotel.
+- Trazer de volta uma galeria de fotos quando houver um conjunto real de
+  imagens do hotel — a estrutura de `assets/images/` já está pronta para isso.
 
 ---
 
-### Nota sobre este projeto
+## 10. Changelog desta revisão
 
-Este é um site de **demonstração**, criado para mostrar como o site oficial do
-Hotel Portal do Corrente poderia funcionar. Nenhuma informação sobre preços,
-disponibilidade, nomes de quartos ou avaliações foi inventada — tudo que não
-estava confirmado foi deixado como placeholder, pronto para ser preenchido
-pela equipe do hotel.
+### O que foi alterado
+1. **Galeria removida.** A seção "Galeria" (que só tinha imagens genéricas de
+   demonstração) e o link "Galeria" do menu (desktop e mobile) foram removidos.
+   O CSS e o JavaScript específicos dela (grid da galeria, lightbox) também
+   foram removidos — nada ficou "morto" no código. Nenhum link quebrado: os
+   itens de menu restantes (Início, O Hotel, Acomodações, Comodidades,
+   Localização, Contato, Reservar) apontam todos para seções que existem.
+2. **Quartos reestruturados.** Em vez de três quartos fixos escritos no HTML,
+   os quartos agora vêm de **`config/rooms.js`** e são renderizados por
+   **`js/render.js`**. Isso cria cards profissionais com foto, nome,
+   capacidade, características, comodidades, preço (só se informado) e botão
+   de reserva — e deixa pronto para receber fotos e dados reais só editando
+   um arquivo, sem mexer no HTML.
+3. **Imagens organizadas.** Caminhos centralizados em `config/rooms.js`
+   (quartos) e `assets/images/` (demais fotos). Enquanto o arquivo referenciado
+   for um `.svg` de demonstração, o card avisa sozinho que é uma imagem
+   temporária — isso some automaticamente ao trocar pela foto real.
+4. **Botões de reserva com função real.** Todos os botões "Solicitar reserva"
+   (nos cards de quarto, no botão flutuante e no formulário da seção
+   "Solicitar reserva") agora:
+   - abrem o WhatsApp com uma mensagem identificando o quarto escolhido,
+     **quando** há um número de WhatsApp configurado; ou
+   - mostram um aviso claro ("WhatsApp ainda não configurado") em vez de um
+     link quebrado ou de um número inventado, quando não há.
+5. **Contato revisado.** Telefone, WhatsApp e horário de atendimento agora
+   mostram "a confirmar" quando a informação real ainda não existe, em vez de
+   um placeholder com aparência de número verdadeiro. Instagram e endereço
+   (já confirmados por você) continuam exibidos normalmente.
+6. **Localização preservada e com fallback.** O endereço e o mapa (Google Maps
+   sem necessidade de API paga) continuam como já estavam, agora alimentados a
+   partir de `config/hotel.js`.
+7. **Seção "Sobre" mantida como está**, já que o texto já estava sinalizado
+   como institucional neutro e genérico (nenhuma história, ano de fundação ou
+   serviço foi inventado nela).
+8. **Robustez sem JavaScript.** O efeito de revelação suave das seções agora só
+   é ativado depois que o site confirma que o JavaScript carregou — antes dessa
+   correção, uma falha de rede ao carregar o script deixaria seções inteiras
+   permanentemente invisíveis. Um aviso em texto (`<noscript>`) também foi
+   adicionado na seção de quartos, para quem navega sem JavaScript.
+9. **Ajuste de sobreposição mobile.** O aviso de "WhatsApp não configurado"
+   subiu de posição para não ficar embaixo do botão flutuante de WhatsApp em
+   telas pequenas.
+10. **Testes realizados**: todos os links do menu (desktop e mobile), os
+    botões de reserva, a validação do formulário (datas, hóspedes, telefone),
+    o aviso de WhatsApp não configurado, a versão mobile (390px) e a versão
+    desktop (1440px) foram verificados em navegador automatizado, sem erros de
+    console relacionados ao próprio código do site.
+
+### O que ainda depende de você (sem mudanças nesta revisão)
+Veja a lista completa na seção 7 — em resumo: **fotos reais, telefone,
+WhatsApp, preços (se forem divulgados) e os dados específicos de cada
+quarto** (nome, capacidade, características, comodidades). Tudo isso está
+centralizado em `config/hotel.js` e `config/rooms.js`, prontos para receber
+essas informações sem precisar tocar no restante do código.

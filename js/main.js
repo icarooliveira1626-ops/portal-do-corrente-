@@ -1,12 +1,15 @@
 /**
  * js/main.js
- * Comportamento de interface: navbar, revelação suave ao rolar,
- * lightbox da galeria e validação do formulário de reserva.
- * Nenhum dado do formulário é armazenado — a solicitação apenas
- * monta uma mensagem e abre o WhatsApp.
+ * Comportamento de interface: navbar, revelação suave ao rolar e
+ * formulário de reserva. Nenhum dado do formulário é armazenado —
+ * a solicitação apenas monta uma mensagem e abre o WhatsApp.
  */
 (function () {
   "use strict";
+
+  // Só ativa o estado "oculto antes de revelar" depois que este script
+  // confirma que está rodando — ver nota em css/styles.css.
+  document.documentElement.classList.add("js-ready");
 
   /* ---------------- Navbar ---------------- */
   const navbar = document.querySelector(".navbar");
@@ -14,32 +17,31 @@
   const mobilePanel = document.querySelector(".navbar__mobile-panel");
 
   function onScroll() {
-    if (window.scrollY > 12) {
-      navbar.classList.add("is-scrolled");
-    } else {
-      navbar.classList.remove("is-scrolled");
-    }
+    navbar.classList.toggle("is-scrolled", window.scrollY > 12);
   }
   window.addEventListener("scroll", onScroll, { passive: true });
   onScroll();
 
-  function closeMobilePanel() {
-    mobilePanel.classList.remove("is-open");
-    toggleBtn.setAttribute("aria-expanded", "false");
-    document.body.style.overflow = "";
+  function setMobilePanel(open) {
+    mobilePanel.classList.toggle("is-open", open);
+    toggleBtn.setAttribute("aria-expanded", String(open));
+    toggleBtn.setAttribute("aria-label", open ? "Fechar menu" : "Abrir menu");
+    document.body.style.overflow = open ? "hidden" : "";
   }
 
   if (toggleBtn && mobilePanel) {
     toggleBtn.addEventListener("click", () => {
-      const isOpen = mobilePanel.classList.toggle("is-open");
-      toggleBtn.setAttribute("aria-expanded", String(isOpen));
-      document.body.style.overflow = isOpen ? "hidden" : "";
+      setMobilePanel(!mobilePanel.classList.contains("is-open"));
     });
     mobilePanel.querySelectorAll("a").forEach((a) =>
-      a.addEventListener("click", closeMobilePanel)
+      a.addEventListener("click", () => setMobilePanel(false))
     );
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeMobilePanel();
+      if (e.key === "Escape") setMobilePanel(false);
+    });
+    // Se a tela for ampliada com o menu aberto, fecha o painel
+    window.matchMedia("(min-width: 861px)").addEventListener("change", (e) => {
+      if (e.matches) setMobilePanel(false);
     });
   }
 
@@ -55,64 +57,11 @@
           }
         });
       },
-      { threshold: 0.15 }
+      { threshold: 0.12 }
     );
     revealTargets.forEach((el) => observer.observe(el));
   } else {
     revealTargets.forEach((el) => el.classList.add("is-visible"));
-  }
-
-  /* ---------------- Galeria / Lightbox ---------------- */
-  const galleryButtons = Array.from(document.querySelectorAll(".gallery-item button"));
-  const lightbox = document.querySelector(".lightbox");
-
-  if (galleryButtons.length && lightbox) {
-    const lightboxImg = lightbox.querySelector("img");
-    const closeBtn = lightbox.querySelector(".lightbox__close");
-    const prevBtn = lightbox.querySelector(".lightbox__prev");
-    const nextBtn = lightbox.querySelector(".lightbox__next");
-    let currentIndex = 0;
-    let lastFocused = null;
-
-    function openLightbox(index) {
-      currentIndex = index;
-      const sourceImg = galleryButtons[index].querySelector("img");
-      lightboxImg.src = sourceImg.src;
-      lightboxImg.alt = sourceImg.alt;
-      lastFocused = document.activeElement;
-      lightbox.classList.add("is-open");
-      closeBtn.focus();
-      document.body.style.overflow = "hidden";
-    }
-
-    function closeLightbox() {
-      lightbox.classList.remove("is-open");
-      document.body.style.overflow = "";
-      if (lastFocused) lastFocused.focus();
-    }
-
-    function showRelative(step) {
-      currentIndex = (currentIndex + step + galleryButtons.length) % galleryButtons.length;
-      const sourceImg = galleryButtons[currentIndex].querySelector("img");
-      lightboxImg.src = sourceImg.src;
-      lightboxImg.alt = sourceImg.alt;
-    }
-
-    galleryButtons.forEach((btn, i) =>
-      btn.addEventListener("click", () => openLightbox(i))
-    );
-    closeBtn.addEventListener("click", closeLightbox);
-    prevBtn.addEventListener("click", () => showRelative(-1));
-    nextBtn.addEventListener("click", () => showRelative(1));
-    lightbox.addEventListener("click", (e) => {
-      if (e.target === lightbox) closeLightbox();
-    });
-    document.addEventListener("keydown", (e) => {
-      if (!lightbox.classList.contains("is-open")) return;
-      if (e.key === "Escape") closeLightbox();
-      if (e.key === "ArrowRight") showRelative(1);
-      if (e.key === "ArrowLeft") showRelative(-1);
-    });
   }
 
   /* ---------------- Formulário de reserva ---------------- */
@@ -122,14 +71,16 @@
     const checkinInput = form.querySelector("#checkin");
     const checkoutInput = form.querySelector("#checkout");
 
-    const todayISO = new Date().toISOString().split("T")[0];
+    // Data de hoje no fuso do visitante (toISOString usaria UTC e
+    // bloquearia "hoje" no fim da noite no Brasil).
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    const todayISO = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
     checkinInput.min = todayISO;
     checkoutInput.min = todayISO;
 
     checkinInput.addEventListener("change", () => {
-      if (checkinInput.value) {
-        checkoutInput.min = checkinInput.value;
-      }
+      if (checkinInput.value) checkoutInput.min = checkinInput.value;
     });
 
     function setFieldError(fieldName, message) {
@@ -143,15 +94,15 @@
       if (!data.name || data.name.trim().length < 2) {
         setFieldError("name", "Informe seu nome completo.");
         valid = false;
-      } else if (data.name.length > 80) {
-        setFieldError("name", "Nome muito longo.");
-        valid = false;
       } else {
         setFieldError("name");
       }
 
       if (!data.checkin) {
         setFieldError("checkin", "Selecione a data de check-in.");
+        valid = false;
+      } else if (data.checkin < todayISO) {
+        setFieldError("checkin", "O check-in não pode ser em uma data passada.");
         valid = false;
       } else {
         setFieldError("checkin");
@@ -205,7 +156,7 @@
         return;
       }
 
-      if (!window.HOTEL_CONFIG || !window.HOTEL_CONFIG.WHATSAPP_CONFIGURED) {
+      if (!isWhatsAppConfigured()) {
         statusEl.textContent =
           "O número de WhatsApp ainda não foi configurado neste site de demonstração.";
         statusEl.setAttribute("data-state", "error");
@@ -221,36 +172,13 @@
         phone: data.phone,
       });
 
-      const link = buildWhatsAppLink(message);
       statusEl.textContent = "Abrindo o WhatsApp com sua solicitação…";
       statusEl.setAttribute("data-state", "success");
-      window.open(link, "_blank", "noopener");
-    });
-  }
-
-  /* ---------------- Botões "Solicitar reserva" que pré-selecionam o quarto ---------------- */
-  document.querySelectorAll("[data-request-room]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const roomSelect = document.querySelector("#roomType");
-      const roomValue = btn.getAttribute("data-request-room");
-      if (roomSelect && roomValue) {
-        roomSelect.value = roomValue;
-      }
-    });
-  });
-
-  /* ---------------- Botão flutuante de WhatsApp ---------------- */
-  const floatBtn = document.querySelector(".whatsapp-float");
-  if (floatBtn) {
-    floatBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      const message =
-        "Olá! Tenho interesse em me hospedar no Hotel Portal do Corrente e gostaria de mais informações.";
       window.open(buildWhatsAppLink(message), "_blank", "noopener");
     });
   }
 
-  /* ---------------- Ano atual no footer ---------------- */
+  /* ---------------- Ano atual no rodapé ---------------- */
   const yearEl = document.querySelector("#current-year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 })();

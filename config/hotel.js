@@ -29,19 +29,21 @@ window.HOTEL_CONFIG = {
   STATE: "BA",
   STATE_FULL: "Bahia",
 
-  // Contato — CONFIRMAR com o hotel antes de publicar
-  PHONE_DISPLAY: "(77) 0000-0000", // CONFIRMAR TELEFONE FIXO
-  PHONE_E164: "+557700000000", // CONFIRMAR TELEFONE FIXO (formato E.164)
+  // Contato — CONFIRMAR com o hotel antes de publicar.
+  // Deixe vazio ("") enquanto não houver o número real: o site mostra
+  // "a confirmar" e não cria links de telefone/WhatsApp inválidos.
+  PHONE_DISPLAY: "", // CONFIRMAR TELEFONE. Ex.: "(77) 3000-0000"
+  PHONE_E164: "", // CONFIRMAR TELEFONE no formato internacional. Ex.: "+557730000000"
 
   // Número usado para gerar links de WhatsApp (wa.me).
   // Formato: código do país + DDD + número, apenas dígitos.
-  // Exemplo real: "5577999999999"
-  WHATSAPP_NUMBER: "5577000000000", // CONFIRMAR NÚMERO OFICIAL DO WHATSAPP
-  WHATSAPP_CONFIGURED: false, // mude para true depois de confirmar o número real acima
+  // Ex.: "5577999999999". Ao preencher, todos os botões de reserva,
+  // o botão flutuante e os links de contato passam a funcionar sozinhos.
+  WHATSAPP_NUMBER: "", // CONFIRMAR NÚMERO OFICIAL DO WHATSAPP
 
   // Redes sociais
   INSTAGRAM_HANDLE: "@hotelportaldocorrente",
-  INSTAGRAM_URL: "https://instagram.com/hotelportaldocorrente",
+  INSTAGRAM_URL: "https://www.instagram.com/hotelportaldocorrente/",
 
   // Endereço
   ADDRESS_STREET: "Rua Jeremias Rodrigues da Silva, nº 750",

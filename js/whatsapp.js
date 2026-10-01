@@ -23,6 +23,31 @@ function buildWhatsAppLink(message) {
 }
 
 /**
+ * Retorna true somente se houver um número de WhatsApp válido em
+ * config/hotel.js (apenas dígitos, 10 a 15, com código do país).
+ * Enquanto for false, o site NÃO cria links wa.me — evita apontar
+ * para um número inexistente.
+ */
+function isWhatsAppConfigured() {
+  const number = (window.HOTEL_CONFIG && window.HOTEL_CONFIG.WHATSAPP_NUMBER) || "";
+  return /^\d{10,15}$/.test(String(number).replace(/\D/g, ""));
+}
+
+/**
+ * Mensagem de consulta para um quarto específico (config/rooms.js).
+ * Usa a mensagem própria do quarto, se houver; sem nome confirmado,
+ * envia uma consulta genérica (nunca o texto de um placeholder).
+ */
+function buildRoomMessage(room) {
+  if (room && room.message) return room.message;
+  const hotelName = (window.HOTEL_CONFIG && window.HOTEL_CONFIG.HOTEL_NAME) || "o hotel";
+  if (room && room.name) {
+    return `Olá! Gostaria de consultar a disponibilidade do ${room.name} no ${hotelName}.`;
+  }
+  return `Olá! Gostaria de consultar a disponibilidade de quartos no ${hotelName}.`;
+}
+
+/**
  * Monta a mensagem padrão de solicitação de reserva a partir dos
  * dados informados no formulário. Campos vazios aparecem como
  * "a confirmar" para não gerar uma mensagem com espaços em branco
